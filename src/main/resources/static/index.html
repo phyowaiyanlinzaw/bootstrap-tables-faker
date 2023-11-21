@@ -29,37 +29,28 @@
 <body>
 <div class="container">
     <h1>Sample Bootstrap Table</h1>
+    <div id="toolbar">
+        <button id="exportPdf" class="btn btn-success">Export PDF</button>
+    </div>
     <table
             id="table"
             data-toggle="table"
             data-pagination="true"
+            data-page-size="5"
+            data-page-list="[5, 10, 20, 50, 100, 200]"
+            data-sort-priority='[{"sortName": "name","sortOrder":"asc"},{"sortName":"department","sortOrder":"asc"}]'
+            data-sortable="true"
+            data-show-footer="true"
+            data-detail-view="true"
+            data-detail-formatter="detailFormatter"
+            data-toolbar="#toolbar"
+            data-toolbar-align="right"
             data-search="true"
             data-url="users"
-            data-show-export="true"
-            data-export-types="['csv', 'excel', 'pdf']"
-            data-export-options='{
-                "fileName": "users-list",
-                "ignoreColumn": ["state"]
-            }'
-            data-export-headers='{
-                "0": "id",
-                "1": "email",
-                "2": "name",
-                "3": "department",
-                "4": "role",
-                "5": "projectCount"
-            }'
-
     >
         <thead>
         <tr>
-            <!--
-             private Long id;
-    private String email;
-    private String name;
-    private String department;
-    private String role;
-    private int projectCount;-->
+            <th data-field="state" data-checkbox="true"></th>
             <th data-field="id" data-sortable="true">ID</th>
             <th data-field="email" data-sortable="true">Email</th>
             <th data-field="name" data-sortable="true">Name</th>
@@ -74,6 +65,8 @@
     </table>
 </div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.68/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.68/vfs_fonts.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/bootstrap-table@1.22.1/dist/bootstrap-table.min.js"></script>
 <script>
@@ -120,6 +113,54 @@
             });
         }
         loadTable();
+
+        $("#exportPdf").on("click", function () {
+            const selectedRows = $("#table").bootstrapTable("getSelections");
+            console.log(selectedRows);
+            exportSelectedRows(selectedRows);
+        });
+
+        function exportSelectedRows(selectedRows) {
+            const docDefinition = {
+                content: [
+                    {
+                        text: "Selected Users",
+                        style: "header"
+                    },
+                    {
+                        table: {
+                            widths: ["auto", "auto", "auto", "auto", "auto", "auto"],
+                            body: [
+                                [
+                                    "ID",
+                                    "Email",
+                                    "Name",
+                                    "Department",
+                                    "Role",
+                                    "Project Count"
+                                ],
+                                ...selectedRows.map((row) => [
+                                    row.id,
+                                    row.email,
+                                    row.name,
+                                    row.department,
+                                    row.role,
+                                    row.projectCount
+                                ])
+                            ]
+                        }
+                    }
+                ],
+                styles: {
+                    header: {
+                        fontSize: 18,
+                        bold: true,
+                        margin: [0, 0, 0, 10]
+                    }
+                }
+            };
+            pdfMake.createPdf(docDefinition).open();
+        }
     });
 </script>
 </body>
